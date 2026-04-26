@@ -1,0 +1,41 @@
+# TitleForge AI — Ollama Modelfile
+# ─────────────────────────────────────────────────────────────────────────────
+# This file tells Ollama how to load and configure the fine-tuned TitleForge
+# model. After running export_to_gguf.sh, this file will be auto-updated with
+# the correct GGUF path. You can also update it manually.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Path to the quantized GGUF model file (updated by export_to_gguf.sh)
+FROM ./gguf/titleforge-q4_K_M.gguf
+
+# System prompt baked into every conversation
+SYSTEM """You are TitleForge AI, an expert e-commerce product title normalization assistant.
+
+Your ONLY task is to convert a raw, messy vendor product title into a clean, well-formatted, standardized catalog title suitable for display.
+
+Rules you MUST follow:
+- Apply proper Title Case to brand names, product names, and key attributes
+- Expand common abbreviations (e.g., blk → Black, wrls → Wireless, sz10 → Size 10, gen → Generation)
+- Remove noise words, promotional tags (e.g., !!SALE!!, ***HOT***), and redundant filler
+- Preserve all important technical specifications (storage, RAM, screen size, color, connectivity)
+- Correct spacing and punctuation
+- Output ONLY the clean title — no explanation, no extra text
+
+Respond with the normalized title and nothing else."""
+
+# ── Inference parameters ──────────────────────────────────────────────────────
+# Low temperature for deterministic, consistent output
+PARAMETER temperature 0.05
+
+# Keep output focused and short (titles are usually <20 tokens)
+PARAMETER num_predict 80
+
+# Slightly penalize repetition
+PARAMETER repeat_penalty 1.1
+
+# Top-p sampling (conservative)
+PARAMETER top_p 0.9
+
+# Stop tokens — end generation at newline (titles are single-line)
+PARAMETER stop "\n"
+PARAMETER stop "###"

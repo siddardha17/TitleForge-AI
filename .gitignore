@@ -1,0 +1,67 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.Python
+env/
+venv/
+.venv/
+ENV/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.cache/
+.pytest_cache/
+htmlcov/
+.coverage
+*.cover
+*.log
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Model weights & large binary files
+*.bin
+*.pt
+*.pth
+*.safetensors
+*.gguf
+*.onnx
+*.pkl
+*.h5
+
+# Ollama / trained model output dirs
+models/
+model_output/
+finetuned_model/
+checkpoints/
+
+# Environment files (secrets)
+.env
+.env.*
+*.env
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Docker
+*.tar
+
+# Temporary files
+tmp/
+temp/
+*.tmp

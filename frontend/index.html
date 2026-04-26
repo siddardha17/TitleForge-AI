@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TitleForge AI — Product Title Normalization Engine</title>
+  <meta name="description" content="AI-powered product title normalization engine. Convert inconsistent vendor titles into clean, standardized catalog titles using a fine-tuned LLM." />
+  <meta property="og:title" content="TitleForge AI" />
+  <meta property="og:description" content="Fine-tuned LLM for product title normalization." />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚒️</text></svg>" />
+</head>
+<body>
+
+  <!-- Floating orbs -->
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast" role="alert" aria-live="polite"></div>
+
+  <div class="container">
+
+    <!-- ── Header ── -->
+    <header>
+      <div class="logo-badge"><span class="dot"></span> AI-Powered · Fine-Tuned LLM</div>
+      <h1>TitleForge AI</h1>
+      <p class="tagline">
+        Transform messy, inconsistent vendor product titles into clean,
+        standardized catalog-ready titles — powered by a fine-tuned language model.
+      </p>
+      <div class="model-badge">
+        🤖 <strong>TinyLlama-1.1B</strong> &nbsp;·&nbsp; LoRA/PEFT Fine-Tuned &nbsp;·&nbsp; Ollama-Ready
+      </div>
+    </header>
+
+    <!-- ── Stats Row ── -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-value" id="stat-count">0</div>
+        <div class="stat-label">Titles Normalized</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-backend" style="font-size:1.1rem;margin-top:0.4rem">—</div>
+        <div class="stat-label">Model Backend</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-status" style="font-size:1.1rem;margin-top:0.4rem">⏳</div>
+        <div class="stat-label">API Status</div>
+      </div>
+    </div>
+
+    <!-- ── Main Card ── -->
+    <div class="card">
+
+      <!-- Tabs -->
+      <div class="tabs" role="tablist">
+        <button class="tab active" role="tab" data-panel="single-panel" id="tab-single" aria-selected="true">⚡ Single Title</button>
+        <button class="tab" role="tab" data-panel="bulk-panel" id="tab-bulk" aria-selected="false">📦 Bulk Upload</button>
+        <button class="tab" role="tab" data-panel="examples-panel" id="tab-examples" aria-selected="false">💡 Examples</button>
+      </div>
+
+      <!-- ─ Single Panel ─ -->
+      <div class="tab-panel active" id="single-panel" role="tabpanel">
+        <div class="section-label">Raw Vendor Title</div>
+        <div class="input-group">
+          <textarea
+            id="single-input"
+            rows="3"
+            placeholder="Paste a raw product title here… e.g. APPLE IPHONE 15 PRO MAX 256GB BLK"
+            aria-label="Raw product title input"
+          ></textarea>
+        </div>
+        <div class="btn-actions">
+          <button class="btn btn-primary" id="normalize-btn" aria-label="Normalize title">
+            <div class="spinner" aria-hidden="true"></div>
+            <span class="btn-text">✨ Normalize</span>
+          </button>
+          <button class="btn btn-ghost" id="clear-btn">Clear</button>
+          <small style="align-self:center;color:var(--text-muted);font-size:0.75rem;margin-left:auto">Ctrl+Enter</small>
+        </div>
+
+        <!-- Result -->
+        <div class="result-box" id="result-box" role="region" aria-label="Normalization result" aria-live="polite">
+          <div class="result-success">
+            <div class="result-label">✅ Normalized Title</div>
+            <div class="result-title" id="result-title"></div>
+            <div class="result-meta">
+              <div class="meta-tag" id="time-meta">⏱ <span>—</span></div>
+              <div class="meta-tag" id="backend-meta">🤖 <span>—</span></div>
+              <button class="meta-tag" id="copy-btn" style="cursor:pointer;border:none;background:transparent;color:inherit;">📋 Copy</button>
+            </div>
+          </div>
+          <div class="diff-view" aria-label="Before and after comparison">
+            <div class="diff-col diff-before">
+              <div class="diff-col-label">Before</div>
+              <div class="diff-content" id="diff-before"></div>
+            </div>
+            <div class="diff-col diff-after">
+              <div class="diff-col-label">After</div>
+              <div class="diff-content" id="diff-after"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─ Bulk Panel ─ -->
+      <div class="tab-panel" id="bulk-panel" role="tabpanel">
+        <div class="section-label">Upload CSV File</div>
+        <div class="upload-zone" id="upload-zone" role="button" aria-label="Upload CSV file">
+          <input type="file" id="file-input" accept=".csv" aria-label="Select CSV file" />
+          <span class="upload-icon">☁️</span>
+          <div class="upload-text">
+            <strong>Drag &amp; drop</strong> your CSV here, or click to browse
+          </div>
+          <div class="upload-hint">Requires a <code>raw_title</code> column · CSV only</div>
+          <div class="upload-filename" id="file-name"></div>
+        </div>
+
+        <div class="progress-bar-wrap" id="progress-wrap" aria-hidden="true">
+          <div class="progress-bar" id="progress-bar"></div>
+        </div>
+
+        <div class="btn-actions">
+          <button class="btn btn-primary" id="upload-btn" disabled aria-label="Start bulk normalization">
+            <div class="spinner" aria-hidden="true"></div>
+            <span class="btn-text">🚀 Process &amp; Download</span>
+          </button>
+        </div>
+
+        <div id="bulk-result" style="margin-top:1rem;display:none;"></div>
+
+        <div class="divider"></div>
+        <div class="section-label">CSV Format</div>
+        <div style="font-size:0.82rem;color:var(--text-muted);font-family:'JetBrains Mono',monospace;background:rgba(0,0,0,0.3);border-radius:var(--radius-sm);padding:0.8rem 1rem;">
+          raw_title<br>
+          APPLE IPHONE 15 PRO MAX 256GB BLK<br>
+          samsung galaxy s24 ultra 512gb phantom black<br>
+          !!SALE!! Nike Air Max 90 sz10 wht
+        </div>
+      </div>
+
+      <!-- ─ Examples Panel ─ -->
+      <div class="tab-panel" id="examples-panel" role="tabpanel">
+        <div class="section-label">Click an example to try it</div>
+        <div class="examples-grid">
+          <div class="example-item" data-raw="APPLE IPHONE 15 PRO MAX 256GB BLK" role="button" tabindex="0" aria-label="Try example: APPLE IPHONE 15 PRO MAX 256GB BLK">
+            <span class="example-arrow">→</span>
+            <span class="example-raw">APPLE IPHONE 15 PRO MAX 256GB BLK</span>
+          </div>
+          <div class="example-item" data-raw="sony wh1000xm5 hdphn blk wrls noisecancelling" role="button" tabindex="0">
+            <span class="example-arrow">→</span>
+            <span class="example-raw">sony wh1000xm5 hdphn blk wrls noisecancelling</span>
+          </div>
+          <div class="example-item" data-raw="!!SALE!! Nike Air Max 90 sz10 wht" role="button" tabindex="0">
+            <span class="example-arrow">→</span>
+            <span class="example-raw">!!SALE!! Nike Air Max 90 sz10 wht</span>
+          </div>
+          <div class="example-item" data-raw="Memory Card 64gb class 10 sd samsung" role="button" tabindex="0">
+            <span class="example-arrow">→</span>
+            <span class="example-raw">Memory Card 64gb class 10 sd samsung</span>
+          </div>
+          <div class="example-item" data-raw="DELL INSPIRON 15 LAPTOP I7 16GB RAM 512SSD WIN11" role="button" tabindex="0">
+            <span class="example-arrow">→</span>
+            <span class="example-raw">DELL INSPIRON 15 LAPTOP I7 16GB RAM 512SSD WIN11</span>
+          </div>
+          <div class="example-item" data-raw="bosch cordless drill 18v 2x2.0ah battry set" role="button" tabindex="0">
+            <span class="example-arrow">→</span>
+            <span class="example-raw">bosch cordless drill 18v 2x2.0ah battry set</span>
+          </div>
+          <div class="example-item" data-raw="lg 55inch oled tv 4k smart webos 2023" role="button" tabindex="0">
+            <span class="example-arrow">→</span>
+            <span class="example-raw">lg 55inch oled tv 4k smart webos 2023</span>
+          </div>
+          <div class="example-item" data-raw="SAMSUNG GALAXY WATCH 6 CLASSIC 43MM BT GRAPHITE" role="button" tabindex="0">
+            <span class="example-arrow">→</span>
+            <span class="example-raw">SAMSUNG GALAXY WATCH 6 CLASSIC 43MM BT GRAPHITE</span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /card -->
+
+    <!-- ── API Info Card ── -->
+    <div class="card">
+      <div class="section-label">API Reference</div>
+      <div style="display:grid;gap:0.75rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
+          <div>
+            <span style="background:rgba(99,102,241,0.2);color:var(--accent-1);border-radius:4px;padding:0.15rem 0.5rem;font-size:0.75rem;font-family:'JetBrains Mono',monospace;font-weight:600;">POST</span>
+            <code style="font-family:'JetBrains Mono',monospace;font-size:0.82rem;color:var(--text-secondary);margin-left:0.5rem;">/normalize</code>
+          </div>
+          <span style="font-size:0.8rem;color:var(--text-muted);">Single title → clean title</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
+          <div>
+            <span style="background:rgba(99,102,241,0.2);color:var(--accent-1);border-radius:4px;padding:0.15rem 0.5rem;font-size:0.75rem;font-family:'JetBrains Mono',monospace;font-weight:600;">POST</span>
+            <code style="font-family:'JetBrains Mono',monospace;font-size:0.82rem;color:var(--text-secondary);margin-left:0.5rem;">/bulk-normalize</code>
+          </div>
+          <span style="font-size:0.8rem;color:var(--text-muted);">CSV upload → normalized CSV</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
+          <div>
+            <span style="background:rgba(16,185,129,0.2);color:var(--success);border-radius:4px;padding:0.15rem 0.5rem;font-size:0.75rem;font-family:'JetBrains Mono',monospace;font-weight:600;">GET</span>
+            <code style="font-family:'JetBrains Mono',monospace;font-size:0.82rem;color:var(--text-secondary);margin-left:0.5rem;">/health</code>
+          </div>
+          <span style="font-size:0.8rem;color:var(--text-muted);">Service health check</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
+          <div>
+            <span style="background:rgba(16,185,129,0.2);color:var(--success);border-radius:4px;padding:0.15rem 0.5rem;font-size:0.75rem;font-family:'JetBrains Mono',monospace;font-weight:600;">GET</span>
+            <code style="font-family:'JetBrains Mono',monospace;font-size:0.82rem;color:var(--text-secondary);margin-left:0.5rem;">/docs</code>
+          </div>
+          <span style="font-size:0.8rem;color:var(--text-muted);">Swagger UI (auto-generated)</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /container -->
+
+  <footer>
+    <p>TitleForge AI v2 &nbsp;·&nbsp; Fine-Tuned with LoRA/PEFT &nbsp;·&nbsp; Ollama-Ready</p>
+    <p style="margin-top:0.4rem">
+      <a href="/docs" target="_blank" rel="noopener">API Docs</a> &nbsp;·&nbsp;
+      <a href="/health" target="_blank" rel="noopener">Health Check</a> &nbsp;·&nbsp;
+      <a href="/model-info" target="_blank" rel="noopener">Model Info</a>
+    </p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
